@@ -1,0 +1,29 @@
+I would appreciate help writing a macro. Originally, I wrote two pairs of
+similar methods. In each pair, one function XXX-as-string is implemented in
+terms of XXX-to-stream. Here is one pair as an example, where XXX is "tag".
+
+    ;; Output the tag to a stream
+    (defun tag-to-stream (tag stream)
+      ( ... )) ; interesting code goes here
+
+    ;; Return the tag as a string.
+    (defun tag-as-string (tag)
+      (with-output-to-string (stream) (tag-to-stream tag stream)))
+
+I started to write a macro like this
+
+    ;; Creates a <type>-as-string method that calls <type>-to-stream.
+    (defmacro as-string (type-name)
+      `(with-output-to-string (stream) (,type-name
+
+and I got stuck. How do I concatenate the macro argument with "-to-stream"
+to form the function name that I am trying to generate? In other words, I
+want the macro call
+
+    (as-string tag)
+
+to generate
+
+    (with-output-to-string (stream) (tag-to-stream tag stream))
+
+Thank you for any pointers and help.

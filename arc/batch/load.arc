@@ -1,0 +1,6 @@
+(load "config.arc")
+(load "util.arc")
+(load "../sql.arc")
+(load "clip.arc")
+(load "program.arc")
+(load "batch.arc")
