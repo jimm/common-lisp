@@ -25,15 +25,26 @@
       (list-devices "Inputs" (reverse inputs))
       (list-devices "Outputs" (reverse outputs)))))
 
-(defun midi-through ()
+(defparameter *midi-through-thread-running* nil)
+
+;; Don't call this function directly. Call `midi-through-start` and
+;; `midi-through-stop`.
+(defun midi-through-thread ()
   (let ((in-stream (pm:device-open-input 1))
         (out-stream (pm:device-open-output 4))
         (buffer (make-alien (array (struct portmidi:event) 1024))))
     (loop
-     while t
+     while *midi-through-thread-running*
      do (progn
           (loop while (not (portmidi:poll in-stream)))
           (let* ((read-vals (multiple-value-list
                              (portmidi:midi-read in-stream buffer 1024)))
                  (num-events (car read-vals)))
             (portmidi:midi-write out-stream buffer num-events))))))
+
+(defun midi-through-start ()
+  (setf *midi-through-thread-running* t)
+  (sb-thread:make-thread (lambda () (midi-through-thread))))
+
+(defun midi-through-stop ()
+  (setf *midi-through-thread-running* nil))
