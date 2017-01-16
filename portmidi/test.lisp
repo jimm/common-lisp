@@ -4,50 +4,36 @@
 (defun device-info ()
   (let ((inputs ())
         (outputs ()))
-    (flet ((list-devices (title devices)
+    (flet ((list-devices (title indexes-and-devices)
                          (format t "~A:~%" title)
-                         (mapcar (lambda (dev)
-                                   (format t "~A~A~%"
-                                           (pm-device-name dev)
-                                           (if (pm-device-open? dev)
-                                               " (open)"
-                                             "")))
-                                 devices)))
-      (dotimes (i (pm-count-devices))
-        (let ((dev (pm-get-device-info i)))
-          (when (pm-device-input? dev)
-            (setq inputs (cons dev inputs)))
-          (when (pm-device-output? dev)
-            (setq outputs (cons dev outputs)))))
-      (list-devices "Inputs" inputs)
-      (list-devices "Outputs" outputs))))
-
-(defvar *pm-bufsize* 1024)
-
-(defvar in-stream nil)
-(defvar out-stream nil)
-(defvar in-vals nil)
-(defvar out-vals nil)
-(setq in-vals (multiple-value-list  (pm-open-input  1 nil *pm-bufsize* nil nil)))
-(setq out-vals (multiple-value-list (pm-open-output 4 nil *pm-bufsize* nil nil 0)))
+                         (mapcar (lambda (index-and-device)
+                                   (let ((index (car index-and-device))
+                                         (dev (cdr index-and-device)))
+                                     (format t "   ~A: ~A~A~%"
+                                             index
+                                             (pm:device-name dev)
+                                             (if (pm:device-open? dev)
+                                                 " (open)"
+                                               ""))))
+                                 indexes-and-devices)))
+      (dotimes (i (portmidi:count-devices))
+        (let ((dev (portmidi:get-device-info i)))
+          (when (pm:device-input? dev)
+            (setq inputs (cons (cons i dev) inputs)))
+          (when (pm:device-output? dev)
+            (setq outputs (cons (cons i dev) outputs)))))
+      (list-devices "Inputs" (reverse inputs))
+      (list-devices "Outputs" (reverse outputs)))))
 
 (defun midi-through ()
-  (let* ((in-vals (multiple-value-list
-                   (pm-open-input 1 nil 1024 nil nil)))
-         (out-vals (multiple-value-list
-                    (pm-open-output 4 nil 1024 nil nil 0)))
-         (in-err (car in-vals))
-         (out-err (car in-vals))
-         (in-stream (cadr in-vals))
-         (out-stream (cadr out-vals)))
-    (when (not (zerop in-err))
-      (error (pm-get-error-text in-err)))
-    (when (not (zerop out-err))
-      (error (pm-get-error-text out-err)))
-    (while t
-      (while (not (pm-poll in-stream))) ; nop
-      (let* ((buffer (make-alien (array (struct pm-event) 1024)))
-             (read-vals (multiple-value-list
-                         (pm-read in-stream buffer 1024)))
-             (num-events (car read-vals)))
-        (pm-write out-stream buffer num-events)))))
+  (let ((in-stream (pm:device-open-input 1))
+        (out-stream (pm:device-open-output 4))
+        (buffer (make-alien (array (struct portmidi:event) 1024))))
+    (loop
+     while t
+     do (progn
+          (loop while (not (portmidi:poll in-stream)))
+          (let* ((read-vals (multiple-value-list
+                             (portmidi:midi-read in-stream buffer 1024)))
+                 (num-events (car read-vals)))
+            (portmidi:midi-write out-stream buffer num-events))))))

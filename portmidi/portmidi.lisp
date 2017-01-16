@@ -1,10 +1,20 @@
-(cl:defpackage "PORTMIDI" (:use "SB-ALIEN" "SB-C-CALL"))
+(cl:defpackage "PORTMIDI"
+               (:use "SB-ALIEN" "SB-C-CALL")
+               (:export "DEVICE-INFO" "EVENT"
+                        "INITIALIZE" "TERMINATE" "HOST-ERROR?" "GET-ERROR-TEXT"
+                        "COUNT-DEVICES" "GET-DEFAULT-INPUT-DEVICE-ID"
+                        "GET-DEFAULT-OUTPUT-DEVICE-ID" "GET-DEVICE-INFO"
+                        "OPEN-INPUT" "OPEN-OUTPUT" "SET-FILTER" "SET-CHANNEL-MASK"
+                        "ABORT-WRITE" "CLOSE-STREAM" "SYNCHRONIZE" "MIDI-READ"
+                        "POLL" "MIDI-WRITE" "MIDI-WRITE-SHORT" "MIDI-WRITE-SYSEX"))
+(cl:in-package "PORTMIDI")
+
 (load-shared-object "libportmidi.dylib")
 
-;;; TODO (declaim (inline pm-whatever)) for efficiency
+;;; TODO (declaim (inline whatever)) for efficiency
 
-(define-alien-type nil
-  (struct pm-device-info
+(define-alien-type device-info
+  (struct device-info
           (struct-version int)
           (interface c-string)
           (name c-string)
@@ -12,40 +22,40 @@
           (output (boolean 32))
           (opened (boolean 32))))
 
-(define-alien-type nil
-  (struct pm-event
+(define-alien-type event
+  (struct event
           (message int)
           (timestamp int)))
 
-(define-alien-routine ("Pm_Initialize" pm-initialize)
+(define-alien-routine ("Pm_Initialize" initialize)
   int)                                  ; return type
 
-(define-alien-routine ("Pm_Terminate" pm-terminate)
+(define-alien-routine ("Pm_Terminate" terminate)
   int)                                  ; return type
 
-(define-alien-routine ("Pm_HasHostError" pm-host-error?)
+(define-alien-routine ("Pm_HasHostError" host-error?)
   int
   (stream (* long)))
 
-(define-alien-routine ("Pm_GetErrorText" pm-get-error-text)
+(define-alien-routine ("Pm_GetErrorText" get-error-text)
   c-string
   (errnum int))
 
-(define-alien-routine ("Pm_CountDevices" pm-count-devices)
+(define-alien-routine ("Pm_CountDevices" count-devices)
   int)
 
-(define-alien-routine ("Pm_GetDefaultInputDeviceID" pm-get-default-input-device-id)
+(define-alien-routine ("Pm_GetDefaultInputDeviceID" get-default-input-device-id)
   int)
 
-(define-alien-routine ("Pm_GetDefaultOutputDeviceID" pm-get-default-output-device-id)
+(define-alien-routine ("Pm_GetDefaultOutputDeviceID" get-default-output-device-id)
   int)
 
-(define-alien-routine ("Pm_GetDeviceInfo" pm-get-device-info)
-  (* (struct pm-device-info))
+(define-alien-routine ("Pm_GetDeviceInfo" get-device-info)
+  (* (struct device-info))
   (device-id int))
 
-;;; (pm-open-input device-num nil 0 nil nil)
-(define-alien-routine ("Pm_OpenInput" pm-open-input)
+;;; (open-input device-num nil 0 nil nil)
+(define-alien-routine ("Pm_OpenInput" open-input)
   int
   (stream long :out)                    ; do not pass in
   (input-device int)
@@ -54,8 +64,8 @@
   (time-proc (* int))                   ; nil
   (time-info (* int)))                  ; nil
 
-;;; (pm-open-output device-num nil 0 nil nil 0)
-(define-alien-routine ("Pm_OpenOutput" pm-open-output)
+;;; (open-output device-num nil 0 nil nil 0)
+(define-alien-routine ("Pm_OpenOutput" open-output)
   int
   (stream long :out)                    ; do not pass in
   (output-device int)
@@ -65,69 +75,52 @@
   (time-info (* int))                   ; nil
   (latency int))
 
-(define-alien-routine ("Pm_SetFilter" pm-set-filter)
+(define-alien-routine ("Pm_SetFilter" set-filter)
   int
   (stream (* long))
   (filters-bitmask int))
 
-(define-alien-routine ("Pm_SetChannelMask" pm-set-channel-mask)
+(define-alien-routine ("Pm_SetChannelMask" set-channel-mask)
   int
   (stream (* long))
   (bitmask int))
 
-(define-alien-routine ("Pm_Abort" pm-abort)
+(define-alien-routine ("Pm_Abort" abort-write)
   int
   (stream (* long)))
 
-(define-alien-routine ("Pm_Close" pm-close)
+(define-alien-routine ("Pm_Close" close-stream)
   int
   (stream (* long)))
 
-(define-alien-routine ("Pm_Synchronize" pm-synchronize)
+(define-alien-routine ("Pm_Synchronize" synchronize)
   int
   (stream (* long)))
 
-(define-alien-routine ("Pm_Read" pm-read)
+(define-alien-routine ("Pm_Read" midi-read)
   int
   (stream (* long))
-  (buffer (* (array (struct pm-event))))
+  (buffer (* (array (struct event))))
   (length int))
 
-(define-alien-routine ("Pm_Poll" pm-poll)
+(define-alien-routine ("Pm_Poll" poll)
   int
   (stream (* long)))
 
-(define-alien-routine ("Pm_Write" pm-write)
+(define-alien-routine ("Pm_Write" midi-write)
   int
   (stream (* long))
-  (buffer (* (struct pm-event)))
+  (buffer (* (struct event)))
   (length int))
 
-(define-alien-routine ("Pm_WriteShort" pm-write-short)
+(define-alien-routine ("Pm_WriteShort" midi-write-short)
   int
   (stream (* long))
   (when-tstamp int)
   (msg int))
 
-(define-alien-routine ("Pm_WriteSysEx" pm-write-sysex)
+(define-alien-routine ("Pm_WriteSysEx" midi-write-sysex)
   int
   (stream (* long))
   (when-tstamp int)
   (msg (array unsigned-char)))
-
-(defun pm-channel (chan) (ash 1 chan))
-
-(defun pm-message (status data1 data2)
-  (logior
-   (ash (logand data2  15) 16)
-   (ash (logand data1  15)  8)
-        (logand status 15)))
-
-(defun pm-message-status (msg) (logand      msg         15))
-(defun pm-message-data1 (msg)  (logand (ash msg (-  8)) 15))
-(defun pm-message-data2 (msg)  (logand (ash msg (- 16)) 15))
-
-(defun pm-device-name (device) (slot device 'name))
-(defun pm-device-input? (device) (slot device 'input))
-(defun pm-device-output? (device) (slot device 'output))
-(defun pm-device-open? (device) (slot device 'opened))

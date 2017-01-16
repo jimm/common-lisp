@@ -1,3 +1,3 @@
-(load-shared-object "libportmidi.dylib")
 (load "portmidi.lisp")
-(pm-initialize)
+(portmidi:initialize)
+(load "pm.lisp")
