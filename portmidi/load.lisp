@@ -1,3 +1,3 @@
-(load "portmidi.lisp")
+(load "portmidi")
 (portmidi:initialize)
-(load "pm.lisp")
+(load "pm")

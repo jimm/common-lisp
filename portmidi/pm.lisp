@@ -15,7 +15,7 @@
    (ash (logand data1  #xff)  8)
            (logand status #xff)))
 
-(defun message-status (msg) (logand         msg         #xff))
+(defun message-status (msg) (logand      msg         #xff))
 (defun message-data1 (msg)  (logand (ash msg (-  8)) #xff))
 (defun message-data2 (msg)  (logand (ash msg (- 16)) #xff))
 
@@ -24,9 +24,11 @@
 (defun device-output? (device) (slot device 'portmidi::output))
 (defun device-open? (device) (slot device 'portmidi::opened))
 
-(defun device-open-io (num open-func)   ; internal
-  (let* ((vals (multiple-value-list
-                (funcall open-func num nil 1024 nil nil)))
+(defun device-open-io (num open-func last-arg-p)   ; internal
+  (let* ((args (append (list num nil 1024 nil nil)
+                       (if last-arg-p (list 0) ())))
+         (vals (multiple-value-list
+                (apply open-func args)))
          (err (car vals))
          (stream (cadr vals)))
     (when (not (zerop err))
@@ -34,10 +36,10 @@
     stream))
 
 (defun device-open-input (num)
-  (device-open-io num #'portmidi:open-input))
+  (device-open-io num #'portmidi:open-input nil))
 
 (defun device-open-output (num)
-  (device-open-io num #'portmidi:open-output))
+  (device-open-io num #'portmidi:open-output t))
 
 (defun list-devices ()
   (let ((inputs ())
