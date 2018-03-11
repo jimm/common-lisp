@@ -27,15 +27,6 @@
                                    (second hex))))))
 ;; ================ rules ================
 
-(defun game-tree (board player spare-dice first-move)
-  (list player
-        board
-        (add-passing-move board
-                          player
-                          spare-dice
-                          first-move
-                          (attacking-moves board player spare-dice))))
-
 (defun add-passing-move (board player spare-dice first-move moves)
   (if first-move
       moves
@@ -63,6 +54,15 @@
                         (neighbors src))))
             (loop for n below *board-hexnum*
                   collect n))))
+
+(defun game-tree (board player spare-dice first-move)
+  (list player
+        board
+        (add-passing-move board
+                          player
+                          spare-dice
+                          first-move
+                          (attacking-moves board player spare-dice))))
 
 (defun neighbors (pos)
   (let ((up (- pos *board-size*))

@@ -1,0 +1,4 @@
+#+begin_src lisp
+  (load "load")
+  (pm:list-devices)
+#+end_src

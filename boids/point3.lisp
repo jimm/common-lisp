@@ -1,5 +1,8 @@
 ;;;; Defines point more simply: as a list containing three elements.
 
+;; Creates a new point given three coordinates.
+(defun make-point (x y z) (list x y z))
+
 ;; Returns t if x, y, and z of two points are the same.
 (defun point= (p0 p1) (equal p0 p1))
 
