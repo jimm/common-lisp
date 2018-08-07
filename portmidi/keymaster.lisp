@@ -1,8 +1,8 @@
-(defpackage #:km
-  (:use #:portmidi #:common-lisp #:pm)
-  (:export #:load-and-run #:run))
-
-(in-package #:km)
+(in-package :cl-user)
+(defpackage :km
+  (:use :cl :portmidi :pm)
+  (:export :load-and-run :run))
+(in-package :km)
 
 (defun patch (name connections &optional start stop)
   )

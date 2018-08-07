@@ -1,8 +1,9 @@
-(defpackage #:km-cursor
-  ;; TODO #:goto-song #:goto-song-list #:attempt-goto
-  (:export #:cursor #:next-song #:prev-song #:next-patch #:prev-patch))
-
-(in-package #:km-cursor)
+(in-package :cl-user)
+(defpackage :km-cursor
+  (:use :cl)
+  ;; TODO :goto-song :goto-song-list :attempt-goto
+  (:export :cursor :next-song :prev-song :next-patch :prev-patch))
+(in-package :km-cursor)
 
 (defun cursor (km)
   (get 'cursor km))

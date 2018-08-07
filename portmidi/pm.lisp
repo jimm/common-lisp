@@ -1,11 +1,11 @@
-(defpackage #:pm
-  (:use #:portmidi #:common-lisp #:sb-alien)
-  (:export #:channel #:message
-           #:message-status #:message-data1 #:message-data2
-           #:device-name #:device-input? #:device-output? #:device-open?
-           #:device-open-input #:device-open-output #:list-devices))
-
-(in-package #:pm)
+(in-package :cl-user)
+(defpackage :pm
+  (:use :portmidi :common-lisp :sb-alien)
+  (:export :channel :message
+           :message-status :message-data1 :message-data2
+           :device-name :device-input? :device-output? :device-open?
+           :device-open-input :device-open-output :list-devices))
+(in-package :pm)
 
 (defun channel (chan) (ash 1 chan))
 

@@ -1,13 +1,14 @@
-(cl:defpackage "PORTMIDI"
-               (:use "SB-ALIEN" "SB-C-CALL")
-               (:export "DEVICE-INFO" "EVENT"
-                        "INITIALIZE" "TERMINATE" "HOST-ERROR?" "GET-ERROR-TEXT"
-                        "COUNT-DEVICES" "GET-DEFAULT-INPUT-DEVICE-ID"
-                        "GET-DEFAULT-OUTPUT-DEVICE-ID" "GET-DEVICE-INFO"
-                        "OPEN-INPUT" "OPEN-OUTPUT" "SET-FILTER" "SET-CHANNEL-MASK"
-                        "ABORT-WRITE" "CLOSE-STREAM" "SYNCHRONIZE" "MIDI-READ"
-                        "POLL" "MIDI-WRITE" "MIDI-WRITE-SHORT" "MIDI-WRITE-SYSEX"))
-(cl:in-package "PORTMIDI")
+(in-package :cl-user)
+(defpackage :portmidi
+  (:use :cl :sb-alien :sb-c-call)
+  (:export :device-info :event
+           :initialize :terminate :host-error? :get-error-text
+           :count-devices :get-default-input-device-id
+           :get-default-output-device-id :get-device-info
+           :open-input :open-output :set-filter :set-channel-mask
+           :abort-write :close-stream :synchronize :midi-read
+           :poll :midi-write :midi-write-short :midi-write-sysex))
+(in-package :portmidi)
 
 (load-shared-object "libportmidi.dylib")
 
