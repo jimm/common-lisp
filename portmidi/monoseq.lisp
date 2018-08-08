@@ -17,10 +17,10 @@
       (loop for step in steps
          do (progn
               (format t "on ~a~%" step)
-              ;; (portmidi:midi-write-short pm-output 0 (pm:message 0x90 step 127))
+              (portmidi:midi-write-short pm-output 0 (pm:message #x90 step 127))
               (sleep pause-secs)
               (format t "off ~a~%" step))
-              ;; (portmidi:midi-write-short pm-output 0 (pm:message 0x80 step 127)))))))
+              (portmidi:midi-write-short pm-output 0 (pm:message #x80 step 127)))))))
            ))))
 
 ;; sample
@@ -30,5 +30,6 @@
 (setf test-output (pm:device-open-output 1))
 
 (seq-loop test-output my-seq
-          ...                           ; ...
-          )
+          40 42 44 45 47 49 51 52)
+
+(pm:device-close test-output)
