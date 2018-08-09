@@ -34,7 +34,7 @@ error, calls `error'. For internal use only."
                 (apply open-func args)))
          (err (first vals))
          (stream (second vals)))
-    (when (not (zerop err))
+    (unless (zerop err)
       (error (portmidi:get-error-text err)))
     stream))
 

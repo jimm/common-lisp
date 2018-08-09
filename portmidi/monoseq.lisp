@@ -10,6 +10,10 @@
   (channel 1 :type integer)
   (playing-notes (make-hash-table) :type hash-table))
 
+(defun report-if-error (err)
+  (unless (zerop err)
+    (format t "~A~%" (portmidi:get-error-text err))))
+
 (defun seq-loop (pm-output mseq &rest steps)
   (let ((pause-secs (/ 60.0 (monoseq-tempo mseq))))
     (dotimes (i 3)
@@ -17,19 +21,18 @@
       (loop for step in steps
          do (progn
               (format t "on ~a~%" step)
-              (portmidi:midi-write-short pm-output 0 (pm:message #x90 step 127))
+              (report-if-error (portmidi:midi-write-short pm-output 0 (pm:message #x90 step 127)))
               (sleep pause-secs)
-              (format t "off ~a~%" step))
-              (portmidi:midi-write-short pm-output 0 (pm:message #x80 step 127)))))))
-           ))))
+              (format t "off ~a~%" step)
+              (report-if-error (portmidi:midi-write-short pm-output 0 (pm:message #x80 step 127))))))))
 
 ;; sample
 (defvar my-seq (make-monoseq))
 (defvar test-output nil)
 
-(setf test-output (pm:device-open-output 1))
+(setf test-output (pm:device-open-output 2)) ; SimpleSynth virtual input
 
 (seq-loop test-output my-seq
           40 42 44 45 47 49 51 52)
 
-(pm:device-close test-output)
+(report-if-error (pm:device-close test-output))

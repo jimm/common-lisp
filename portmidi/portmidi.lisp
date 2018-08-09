@@ -33,7 +33,7 @@
 (define-alien-routine ("Pm_Terminate" terminate) int)
 
 (define-alien-routine ("Pm_HasHostError" host-error?) int
-  (stream (* long)))
+  (stream long))
 
 (define-alien-routine ("Pm_GetErrorText" get-error-text) c-string
   (errnum int))
@@ -49,7 +49,7 @@
 
 ;;; (open-input device-num nil 0 nil nil)
 (define-alien-routine ("Pm_OpenInput" open-input) int
-  (stream long :out)                    ; do not pass in
+  (stream long :out)              ; do not pass in
   (input-device int)
   (input-driver-info (* int))           ; nil
   (buffer-size int)
@@ -58,7 +58,7 @@
 
 ;;; (open-output device-num nil 0 nil nil 0)
 (define-alien-routine ("Pm_OpenOutput" open-output) int
-  (stream long :out)                    ; do not pass in
+  (stream long :out)              ; do not pass in
   (output-device int)
   (output-driver-info (* int))          ; nil
   (buffer-size int)
@@ -67,41 +67,41 @@
   (latency int))
 
 (define-alien-routine ("Pm_SetFilter" set-filter) int
-  (stream (* long))
+  (stream long)
   (filters-bitmask int))
 
 (define-alien-routine ("Pm_SetChannelMask" set-channel-mask) int
-  (stream (* long))
+  (stream long)
   (bitmask int))
 
 (define-alien-routine ("Pm_Abort" abort-write) int
-  (stream (* long)))
+  (stream long))
 
 (define-alien-routine ("Pm_Close" close-stream) int
-  (stream (* long)))
+  (stream long))
 
 (define-alien-routine ("Pm_Synchronize" synchronize) int
-  (stream (* long)))
+  (stream long))
 
 (define-alien-routine ("Pm_Read" midi-read) int
-  (stream (* long))
+  (stream long)
   (buffer (* (array (struct event))))
   (length int))
 
 (define-alien-routine ("Pm_Poll" poll) int
-  (stream (* long)))
+  (stream long))
 
 (define-alien-routine ("Pm_Write" midi-write) int
-  (stream (* long))
+  (stream long)
   (buffer (* (struct event)))
   (length int))
 
 (define-alien-routine ("Pm_WriteShort" midi-write-short) int
-  (stream (* long))
+  (stream long)
   (when-tstamp int)
   (msg int))
 
 (define-alien-routine ("Pm_WriteSysEx" midi-write-sysex) int
-  (stream (* long))
+  (stream long)
   (when-tstamp int)
   (msg (array unsigned-char)))
