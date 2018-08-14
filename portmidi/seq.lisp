@@ -137,7 +137,7 @@ number of seconds of the note's duration."
 
 ;; Optional args are song slots, e.g. (song-test :tempo 150)
 (defun song-test (&rest seq-args)
-  (let ((my-seq (make-test-song seq-args))
+  (let ((my-seq (apply #'make-test-song seq-args))
         (test-output (pm:device-open-output 2))) ; SimpleSynth virtual input
     (song-play test-output my-seq)
     (report-if-error (pm:device-close test-output))))
