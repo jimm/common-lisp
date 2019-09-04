@@ -5,29 +5,52 @@
            :message-status :message-data1 :message-data2
            :device-name :device-input? :device-output? :device-open?
            :device-open-input :device-open-output :device-close
-           :devices :list-devices))
+           :devices :print-devices))
 (in-package :pm)
 
-(defun channel (chan) (ash 1 chan))
+(defun channel (chan)
+  "Given a channel number 0-15, returns a bit flag useful for
+`portmidi:set-channel-mask'."
+  (ash 1 chan))
 
 (defun message (status data1 data2)
+  "Given three data bytes, returns a `PmMessage'."
   (logior
    (ash (logand data2  #xff) 16)
    (ash (logand data1  #xff)  8)
         (logand status #xff)))
 
-(defun message-status (msg) (logand      msg      #xff))
-(defun message-data1 (msg)  (logand (ash msg  -8) #xff))
-(defun message-data2 (msg)  (logand (ash msg -16) #xff))
+(defun message-status (msg)
+  "Extracts status byte from a `PmMessage'."
+  (logand msg #xff))
 
-(defun device-name (device) (slot device 'portmidi::name))
-(defun device-input? (device) (slot device 'portmidi::input))
-(defun device-output? (device) (slot device 'portmidi::output))
-(defun device-open? (device) (slot device 'portmidi::opened))
+(defun message-data1 (msg)
+  "Extracts data1 byte from a `PmMessage'."
+  (logand (ash msg -8) #xff))
 
-(defun device-open-io (num open-func last-arg-p)   ; internal
-  "Opens an input or output device and returns the PmStream struct. On
-error, calls `error'. For internal use only."
+(defun message-data2 (msg)
+  "Extracts data2 byte from a `PmMessage'."
+  (logand (ash msg -16) #xff))
+
+(defun device-name (device)
+  "Returns the name slot of a `portmidi:device-info'."
+  (slot device 'portmidi::name))
+
+(defun device-input? (device)
+  "Returns `t' if `device' is an input device."
+ (slot device 'portmidi::input))
+
+(defun device-output? (device)
+  "Returns `t' if `device' is an input device."
+  (slot device 'portmidi::output))
+
+(defun device-open? (device)
+  "Returns `t' if `device' is an input device."
+  (slot device 'portmidi::opened))
+
+(defun -device-open-io (num open-func last-arg-p)   ; internal
+  "Opens an input or output device and returns the `PmStream' struct. On
+error, calls `error'."
   (let* ((args (append (list num nil 1024 nil nil)
                        (if last-arg-p (list 0) ())))
          (vals (multiple-value-list
@@ -39,17 +62,17 @@ error, calls `error'. For internal use only."
     stream))
 
 (defun device-open-input (num)
-  "Given a device number, opens that input device and returns a PmStream
+  "Given a device number, opens that input device and returns a `PmStream'
 struct. On error, calls `error'."
-  (device-open-io num #'portmidi:open-input nil))
+  (-device-open-io num #'portmidi:open-input nil))
 
 (defun device-open-output (num)
-  "Given a device number, opens that output device and returns a PmStream
+  "Given a device number, opens that output device and returns a `PmStream'
 struct. On error, calls `error'."
-  (device-open-io num #'portmidi:open-output t))
+  (-device-open-io num #'portmidi:open-output t))
 
 (defun device-close (stream)
-  "Closes PmStream `stream'."
+  "Closes `PmStream' `stream'."
   (close-stream stream))
 
 (defun devices ()
@@ -67,7 +90,7 @@ PortMidi and whose cdr is the device struct."
             (setq outputs (cons (cons i dev) outputs)))))
       (list (reverse inputs) (reverse outputs))))
 
-(defun list-devices ()
+(defun print-devices ()
   "Writes input and output device numbers and names to stdout, and indicates
 if each is open already."
   (let* ((inputs-and-outputs (devices))
