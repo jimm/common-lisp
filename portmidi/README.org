@@ -1,4 +1,126 @@
+* PortMidi
+
+This is a wrapper around [[https://github.com/PortMidi/portmidi][PortMidi]].
+
+The =pm= package is a high-level interface to PortMidi. The =portmidi=
+package is the lower-level FFI wrapper around PortMidi.
+
+* Loading
+
 #+begin_src lisp
   (load "load")
-  (pm:list-devices)
+  (pm:print-devices)
 #+end_src
+
+* Package pm
+
+** channel
+
+Given a channel number 0-15, returns a bit flag useful for =portmidi:set-channel-mask=.
+: (pm:channel 0)
+: => 1
+
+** device-close
+
+Closes `PmStream' =stream=. Returns 0 if all is well, else returns a
+PortMidi error number.
+: (pm:device-close stream)
+
+** device-input?
+
+Returns `t' if `device' is an input device.
+: (pm:device-input? device)
+: => t
+
+** device-name
+
+Returns the name slot of a =portmidi:device-info=.
+: (defvar first-input-device (cdr (first (first (pm:devices))))
+: (pm:device-name first-input-device)
+: => "IAC Driver Bus 1"
+
+** device-open-input
+
+Given a device number, opens that input device and returns a =PmStream=
+struct. On error, calls =pm:error=.
+: (defvar first-input-num (car (first (first (pm:devices))))
+: (defvar first-input-stream (pm:device-open-input first-input-num))
+: first-input-stream
+: => 105553148429952
+
+** device-open-output
+
+Given a device number, opens that output device and returns a =PmStream=
+struct. On error, calls =pm:error=.
+: (defvar first-output-num (car (first (second (pm:devices))))
+: (defvar first-output-stream (pm:device-open-output first-output-num))
+: first-output-stream
+: => 105553148429952
+
+** device-open?
+
+Returns =t= if =device= is open.
+: (pm:device-open? first-input-device)
+
+** device-output?
+
+Returns =t= if =device= is an output device.
+: (pm:device-output? first-input-device)
+: => nil
+
+** devices
+
+Returns a two-element list. The first element is a list of =(num .
+input-device)= cons cells, the second is a list of (=num . output-device)=
+cons cells. The numbers are integer indexes used to to identify the device
+to PortMidi. The devices are integers that are opaque pointers used by
+PortMidi.
+
+: (pm:devices)
+: => (((0 . #<SB-ALIEN-INTERNALS:...) (1 . #<SB-ALIEN-INTERNALS:...))
+:     ((2 . #<SB-ALIEN-INTERNALS:...) (3 . #<SB-ALIEN-INTERNALS:...)))
+
+** message
+
+Given three data bytes, returns a =PmMessage=.
+: (pm:message #16r80 #16r40 0)
+: => 16512
+: (format t "~8,'0x~%" (pm:message #16r80 #16r40 0))
+: => 00004080
+
+** message-data1
+
+Extracts data1 byte from a =PmMessage=.
+: (pm:message-data1 (pm:message #16r80 #16r40 0))
+: => 64
+
+** message-data2
+
+Extracts data2 byte from a =PmMessage=.
+: (pm:message-data2 (pm:message #16r80 #16r40 0))
+: => 0
+
+** message-status
+
+Extracts status byte from a =PmMessage=.
+: (pm:message-status (pm:message #16r80 #16r40 0))
+: => 128
+
+** print-devices
+
+Writes input and output device numbers and names to stdout, and indicates if
+each is open already.
+
+: (pm:print-devices)
+: => Inputs:
+: =>   0: IAC Driver Bus 1 (open)
+: =>   1: UMC404HD 192k
+: =>Outputs:
+: =>   2: IAC Driver Bus 1 (open)
+: =>   3: UMC404HD 192k
+
+* Package portmidi
+
+All of the public functions are wrappers around similarly-named PortMidi
+functions. There are also two types exposed: =device-info= and =event=. See
+PortMidi's =portmidi.h= header file for details.

@@ -45,7 +45,7 @@
   (slot device 'portmidi::output))
 
 (defun device-open? (device)
-  "Returns `t' if `device' is an input device."
+  "Returns `t' if `device' is open."
   (slot device 'portmidi::opened))
 
 (defun -device-open-io (num open-func last-arg-p)   ; internal
