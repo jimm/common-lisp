@@ -1,6 +1,8 @@
 * PortMidi
 
-This is a wrapper around [[https://github.com/PortMidi/portmidi][PortMidi]].
+This is a wrapper around [[https://github.com/PortMidi/portmidi][PortMidi]], along with some additional
+experimentation around realtime performance control /ala/
+[KeyMaster](https://github.com/jimm/keymaster).
 
 The =pm= package is a high-level interface to PortMidi. The =portmidi=
 package is the lower-level FFI wrapper around PortMidi.

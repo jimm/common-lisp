@@ -6,6 +6,7 @@
            :count-devices :get-default-input-device-id
            :get-default-output-device-id :get-device-info
            :open-input :open-output :set-filter :set-channel-mask
+           :create-virtual-input :create-virtual-output :delete-virtual-device
            :abort-write :close-stream :synchronize :midi-read
            :poll :midi-write :midi-write-short :midi-write-sysex))
 (in-package :portmidi)
@@ -65,6 +66,22 @@
   (time-proc (* int))                   ; nil
   (time-info (* int))                   ; nil
   (latency int))
+
+;;; (create-virtual-input "Input Name" "CoreMIDI" 0)
+(define-alien-routine ("Pm_CreateVirtualInput" create-virtual-input) int
+  (name c-string)
+  (interface c-string)
+  (device-info (* device-info)))        ; nil
+
+;;; (create-virtual-Output "Output Name" "CoreMIDI" 0)
+(define-alien-routine ("Pm_CreateVirtualOutput" create-virtual-output) int
+  (name c-string)
+  (interface c-string)
+  (device-info (* device-info)))        ; nil
+
+;;; (delete-virtual-device 42)
+(define-alien-routine ("Pm_DeleteVirtualDevice" delete-virtual-device) int
+  (device-id int))
 
 (define-alien-routine ("Pm_SetFilter" set-filter) int
   (stream long)

@@ -5,6 +5,7 @@
            :message-status :message-data1 :message-data2
            :device-name :device-input? :device-output? :device-open?
            :device-open-input :device-open-output :device-close
+           :virtual-open-input :virtual-open-output :virtual-close
            :devices :print-devices))
 (in-package :pm)
 
@@ -74,6 +75,30 @@ struct. On error, calls `error'."
 (defun device-close (stream)
   "Closes `PmStream' `stream'."
   (close-stream stream))
+
+(defun virtual-open-input (name interface)
+  "Creates a virtual input with the given name and interface
+type (\"MMSystem\", \"CoreMIDI\", or \"ALSA\") and returns the device ID. On
+error, calls `error'"
+  (let ((dev (portmidi:create-virtual-input name interface 0)))
+    (when (< dev 0)
+      (error (portmidi:get-error-text dev)))
+    dev))
+
+(defun virtual-open-output (name interface)
+  "Creates a virtual output with the given name and interface
+type (\"MMSystem\", \"CoreMIDI\", or \"ALSA\") and returns the device ID. On
+error, calls `error'"
+  (let ((dev (portmidi:create-virtual-output name interface 0)))
+    (when (< dev 0)
+      (error (portmidi:get-error-text dev)))
+    dev))
+
+(defun virtual-close (device-id)
+  "Deletes a virtual device. On error, calls `error'."
+  (let ((err (portmidi:delete-virtual-device device-id)))
+    (unless (zerop err)
+      (error (portmidi:get-error-text err)))))
 
 (defun devices ()
   "Returns a two-element list. The first element is the list of input
