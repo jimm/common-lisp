@@ -5,7 +5,7 @@
    ))
 (in-package :midi-consts)
 
-;; ;; MIDI and PatchMaster constants.
+;; ;; MIDI constants.
 ;; module PM
 
 ;;   ;; Define MIDI note names C0 - B10

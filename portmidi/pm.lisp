@@ -76,20 +76,40 @@ struct. On error, calls `error'."
   "Closes `PmStream' `stream'."
   (close-stream stream))
 
-(defun virtual-open-input (name interface)
+(defun -guess-interface-name ()
+  "Attempts to guess the MIDI interface name by looking at the return value of
+~software-type~. Returns one of \"MMSystem\", \"CoreMIDI\", \"ALSA\", or
+~nil~."
+  (let ((sys-name (string-downcase (software-version))))
+    (cond ((string= (subseq sys-name 0 6) "darwin")
+           "CoreMIDI")
+          ((string= (subseq sys-name 0 3) "win")
+           "MMSystem")
+          ((string= (subseq sys-name 0 5) "linux")
+           "ALSA")
+          (t nil))))
+
+(defun virtual-open-input (name &optional interface)
   "Creates a virtual input with the given name and interface
 type (\"MMSystem\", \"CoreMIDI\", or \"ALSA\") and returns the device ID. On
 error, calls `error'"
-  (let ((dev (portmidi:create-virtual-input name interface 0)))
+  (let* ((interface-name (or interface (-guess-interface-name)))
+         (dev (portmidi:create-virtual-input name interface-name 0)))
     (when (< dev 0)
       (error (portmidi:get-error-text dev)))
     dev))
 
-(defun virtual-open-output (name interface)
-  "Creates a virtual output with the given name and interface
-type (\"MMSystem\", \"CoreMIDI\", or \"ALSA\") and returns the device ID. On
-error, calls `error'"
-  (let ((dev (portmidi:create-virtual-output name interface 0)))
+(defun virtual-open-output (name &optional interface)
+  "Opens a virtual output and returns a virtual device id. The first argument
+is the name to assign the virtual input. The second optional argument is the
+interface type to use. This function attempts to guess which to use based on
+the return value of a call to ~(software-type)~. As of this writing,
+PortMidi supports \"MMSystem\" for Win32, \"ALSA\" for Linux, and
+\"CoreMIDI\" for MacOS.
+
+On error, calls `error'."
+  (let* ((interface-name (or interface (-guess-interface-name)))
+         (dev (portmidi:create-virtual-output name interface-name 0)))
     (when (< dev 0)
       (error (portmidi:get-error-text dev)))
     dev))

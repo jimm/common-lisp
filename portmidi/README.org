@@ -4,8 +4,8 @@ This is a wrapper around [[https://github.com/PortMidi/portmidi][PortMidi]], alo
 experimentation around realtime performance control /ala/
 [KeyMaster](https://github.com/jimm/keymaster).
 
-The =pm= package is a high-level interface to PortMidi. The =portmidi=
-package is the lower-level FFI wrapper around PortMidi.
+The =portmidi= package is the lower-level FFI wrapper around PortMidi, and
+the =pm= package is a higher level interface.
 
 * Loading
 
@@ -120,6 +120,48 @@ each is open already.
 : =>Outputs:
 : =>   2: IAC Driver Bus 1 (open)
 : =>   3: UMC404HD 192k
+
+** virtual-close
+
+Closes a virtual device opened by ~pm:virtual-open-input~ or
+~pm:virtual-open-output~.
+
+: (pm:virtual-close virtual-device-id)
+: => nil
+
+** virtual-open-input
+
+Opens a virtual input and returns a virtual device id. The first argument is
+the name to assign the virtual input. The second optional argument is the
+interface type to use. This function attempts to guess which to use based on
+the return value of a call to ~(software-type)~. As of this writing,
+PortMidi supports "MMSystem" for Win32, "ALSA" for Linux, and "CoreMIDI" for
+MacOS.
+
+On error, calls ~error~.
+
+#+begin_src lisp
+  (setf my-virtual-input-id
+        (pm:virtual-open-input "My Virtual Input" "CoreMIDI"))
+  => 42
+#+end_src
+
+** virtual-open-output
+
+Opens a virtual output and returns a virtual device id. The first argument
+is the name to assign the virtual input. The second optional argument is the
+interface type to use. This function attempts to guess which to use based on
+the return value of a call to ~(software-type)~. As of this writing,
+PortMidi supports "MMSystem" for Win32, "ALSA" for Linux, and "CoreMIDI" for
+MacOS.
+
+On error, calls ~error~.
+
+#+begin_src lisp
+  (setf my-virtual-output-id
+        (pm:virtual-open-output "My Virtual Output" "CoreMIDI"))
+  => 43
+#+end_src
 
 * Package portmidi
 
